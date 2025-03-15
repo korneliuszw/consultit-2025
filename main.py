@@ -1,7 +1,7 @@
 import sqlite3
 import sys
 from converters.convert import convert_data
-from invoicing import generate_invoices
+from invoices.creator import generate_invoices
 from migration import create_tables
 
 conn = sqlite3.connect("network.db", detect_types=sqlite3.PARSE_DECLTYPES)

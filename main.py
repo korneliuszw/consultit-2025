@@ -3,6 +3,7 @@ import sys
 from converters.convert import convert_data
 from invoices.creator import generate_invoices
 from invoices.csv import generate_invoices_for_all
+from invoices.pdf import generate_pdf_invoices_for_all
 from migration import create_tables
 
 conn = sqlite3.connect("network.db", detect_types=sqlite3.PARSE_DECLTYPES)
@@ -17,3 +18,5 @@ for x in sys.argv:
         generate_invoices(conn, "01.2025")
     elif x == "invoicesToCSV":
         generate_invoices_for_all(conn)
+    elif x == "invoicesToPdf":
+        generate_pdf_invoices_for_all(conn)

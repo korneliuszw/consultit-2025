@@ -4,14 +4,15 @@
 Tested python version: 3.12
 
 Commands:
-- createDatabase: Removes data from database and creates new database filled with tables
-- loadData: load CSV files into the database
+- createDatabase: Removes data from database and creates new database filled with tables (Task 1)
+- loadData: load CSV files into the database (Task 2)
+- generateInvoice (MM.YYYY): Generates invoices for a month and inserts them to database (Task 3)
 
 You can run multiple commands but they are chained so make sure they follow a logical order
 
 Example:
 ```bash
-python ./main.py createDatabase loadData
+python ./main.py createDatabase loadData generateInvoice "01.2025"
 ```
 
 

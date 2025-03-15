@@ -1,4 +1,5 @@
 from sqlite3 import Connection
+from typing import List
 
 
 class AccessPointModel:
@@ -12,7 +13,7 @@ class AccessPointModel:
         pass
 
 class AccessPointDAO:
-    def get_all(conn: Connection) -> list[AccessPointModel]:
+    def get_all(conn: Connection) -> List[AccessPointModel]:
         result = conn.cursor().execute("""
                 SELECT ACCESS_POINT_ID, PARENT_ACCESS_POINT_ID
                 FROM NETWORK_INFRASTRUCTURE

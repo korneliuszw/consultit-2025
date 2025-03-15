@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 from math import floor
 from sqlite3 import Connection
+from typing import List
 
 from dao.access_points import AccessPointDAO, AccessPointModel
 from dao.customers import CustomerDAO, CustomerModel
@@ -21,7 +22,7 @@ def create_device_lookup_table(devices: AccessPointModel) -> dict[str, set[str]]
         lookup_table[device.parent].update(lookup_table[device.id])
     return lookup_table
 
-ProcessedDowntimeType = list[tuple[str, list[date]]]
+ProcessedDowntimeType = List[tuple[str, List[date]]]
 
 def preprocess_downtime(downtime: TelemetryLogModel) -> ProcessedDowntimeType:
     start = downtime.start_date.date()
@@ -35,7 +36,7 @@ def preprocess_downtime(downtime: TelemetryLogModel) -> ProcessedDowntimeType:
         start += timedelta(days=1)
     return (downtime.access_point_id, dates)
 
-def process_downtimes(downtimes: ProcessedDowntimeType, devices: list[AccessPointModel]):
+def process_downtimes(downtimes: ProcessedDowntimeType, devices: List[AccessPointModel]):
     """Turn all preprocesed downtimes into downtimes only for end-client nodes"""
     device_lookup = create_device_lookup_table(devices)
     client_device_downtimes: dict[str, set[date]] = {}
@@ -53,7 +54,7 @@ def load_client_downtimes_for_month(conn: Connection, month):
 
 def generate_invoices(conn: Connection, month):
     client_device_downtimes = load_client_downtimes_for_month(conn, month)
-    customers: list[CustomerModel] = CustomerDAO.get_all(conn)
+    customers: List[CustomerModel] = CustomerDAO.get_all(conn)
     for customer in customers:
         invoice = InvoiceModel(customer.id, customer.name)
         invoice_lines: set[InvoiceLineModel] = [InvoiceLineModel(invoice, 0, InvoiceLineTitle.SUBSCRIPTION, customer.monthly_amount_due)]

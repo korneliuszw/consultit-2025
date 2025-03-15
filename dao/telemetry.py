@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlite3 import Connection
+from typing import List
 
 
 class TelemetryLogModel:
@@ -13,7 +14,7 @@ class TelemetryLogModel:
         self.end_date = end_date
 
 class TelemetryLogDAO:
-    def get_in_month(conn: Connection, month: str) -> list[TelemetryLogModel]:
+    def get_in_month(conn: Connection, month: str) -> List[TelemetryLogModel]:
         """Month must be of format %m.%Y so 01.2025 => january of 2025"""
         result = conn.cursor().execute("""
             SELECT ACCESS_POINT_ID, DOWNTIME_START_DATE, DOWNTIME_END_DATE

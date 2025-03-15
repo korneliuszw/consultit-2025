@@ -1,4 +1,5 @@
 from sqlite3 import Connection
+from typing import List
 
 
 class CustomerModel:
@@ -14,7 +15,7 @@ class CustomerModel:
         self.monthly_amount_due = monthly_amount_due
 
 class CustomerDAO:
-    def get_all(conn: Connection) -> list[CustomerModel]:
+    def get_all(conn: Connection) -> List[CustomerModel]:
         result = conn.cursor().execute("""
            SELECT ID, NAME, ACCESS_POINT, MONTHLY_AMOUNT_DUE
             FROM CUSTOMERS

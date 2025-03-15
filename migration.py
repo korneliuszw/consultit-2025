@@ -58,6 +58,7 @@ def create_invoices(conn: Connection):
         INVOICE_ID INTEGER PRIMARY KEY AUTOINCREMENT,
         CUSTOMER_ID VARCHAR(50) NOT NULL,
         CUSTOMER_NAME TEXT NOT NULL,
+        MONTH VARCHAR(10) NOT NULL,
         FOREIGN KEY (CUSTOMER_ID) REFERENCES Customers(ID)
     )
     ''')

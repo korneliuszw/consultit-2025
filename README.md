@@ -16,11 +16,12 @@ Install required libraries
 pip install --user -r requirements.txt
 ```
 
-
 Commands:
 - createDatabase: Removes data from database and creates new database filled with tables (Task 1)
 - loadData: load CSV files into the database (Task 2)
 - generateInvoice (MM.YYYY): Generates invoices for a month and inserts them to database (Task 3)
+- invoicesToCSV (MM.YYYY optional): Generates CSV for invoices. Omit a month to generate for all invoices in the database
+- invoicesToPDF (MM.YYYY optional): Generates PDF for invoices. Omit a month to generate for all invoices in the database
 
 You can run multiple commands but they are chained so make sure they follow a logical order
 

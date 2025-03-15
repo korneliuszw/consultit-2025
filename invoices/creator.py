@@ -56,9 +56,9 @@ def generate_invoices(conn: Connection, month):
     client_device_downtimes = load_client_downtimes_for_month(conn, month)
     customers: List[CustomerModel] = CustomerDAO.get_all(conn)
     for customer in customers:
-        invoice = InvoiceModel(customer.id, customer.name)
+        invoice = InvoiceModel(customer.id, customer.name, month)
         invoice_lines: set[InvoiceLineModel] = [InvoiceLineModel(invoice, 0, InvoiceLineTitle.SUBSCRIPTION, customer.monthly_amount_due)]
-        affected_downtimes = client_device_downtimes[customer.access_point]
+        affected_downtimes = client_device_downtimes.get(customer.access_point, [])
         if len(affected_downtimes) > 0:
             downtime_rebate = len(affected_downtimes) * floor(customer.monthly_amount_due / 30) # We store as cents so discard more than that
             invoice_lines.append(InvoiceLineModel(invoice, 1, InvoiceLineTitle.REBATE, -downtime_rebate))

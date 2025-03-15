@@ -17,7 +17,7 @@ def ensure_dir(dir):
 ensure_dir(out_dir)
 
 def get_invoice_name(invoice: InvoiceModel):
-    return f"invoice_{invoice.id}_{invoice.customer_id}"
+    return f"invoice_{invoice.id}_{invoice.customer_id}_{invoice.month}"
 
 def create_single_csv(conn: Connection, invoice: InvoiceModel):
     out_path = path.join(out_dir, f"{get_invoice_name(invoice)}.csv")
@@ -31,7 +31,7 @@ def create_single_csv(conn: Connection, invoice: InvoiceModel):
         for line in lines:
             writer.writerow([line.line_number, line.title, line.amount / 100])
 
-def generate_invoices_for_all(conn: Connection):
-    invoices: List[InvoiceModel] = InvoiceDAO.get_all(conn)
+def generate_invoices_for_all(conn: Connection, month = None):
+    invoices: List[InvoiceModel] = InvoiceDAO.get_all(conn) if month is None else InvoiceDAO.get_for_month(conn, month)
     for invoice in invoices:
         create_single_csv(conn, invoice)

@@ -32,12 +32,13 @@ def create_single_pdf(conn: Connection, invoice: InvoiceModel):
                         customer_city=customer_city,
                         items=items,
                         creation_date=creation_date,
-                        invoice_id=invoice.id
+                        invoice_id=invoice.id,
+                        month=invoice.month
                         )
     HTML(string=html).write_pdf(out_path)
 
-def generate_pdf_invoices_for_all(conn: Connection):
-    invoices = InvoiceDAO.get_all(conn)
+def generate_pdf_invoices_for_all(conn: Connection, month: str):
+    invoices: List[InvoiceModel] = InvoiceDAO.get_all(conn) if month is None else InvoiceDAO.get_for_month(conn, month)
     for invoice in invoices:
         create_single_pdf(conn, invoice)
 

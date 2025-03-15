@@ -10,11 +10,13 @@ class InvoiceModel:
     customer_id: str
     customer_name: str
     lines: int = 0
+    month: str
 
-    def __init__(self, customer_id, customer_name, id = None):
+    def __init__(self, customer_id, customer_name, month, id = None):
         self.customer_id = customer_id
         self.customer_name = customer_name
         self.id = id
+        self.month = month
         pass
 
 class InvoiceLineModel:
@@ -33,8 +35,8 @@ class InvoiceDAO:
     def create(cursor: Cursor, data: InvoiceModel):
         """This will NOT commit to connection!"""
         cursor.execute("""
-            INSERT INTO INVOICES(CUSTOMER_ID, CUSTOMER_NAME) VALUES (?, ?)
-        """, (data.customer_id, data.customer_name))
+            INSERT INTO INVOICES(CUSTOMER_ID, CUSTOMER_NAME, MONTH) VALUES (?, ?, ?)
+        """, (data.customer_id, data.customer_name, data.month))
         data.id = cursor.lastrowid
 
     def insert_line(cursor: Cursor, line: InvoiceLineModel):
@@ -44,10 +46,19 @@ class InvoiceDAO:
 
     def get_all(conn: Connection) -> List[InvoiceModel]:
         result = conn.cursor().execute("""
-            SELECT INVOICE_ID, CUSTOMER_ID, CUSTOMER_NAME
+            SELECT INVOICE_ID, CUSTOMER_ID, CUSTOMER_NAME, MONTH
             FROM INVOICES
         """).fetchall()
-        return [InvoiceModel(cid, cname, id) for id, cid, cname in result]
+        return [InvoiceModel(cid, cname, month, id) for id, cid, cname, month in result]
+    
+    def get_for_month(conn: Connection, month: str) -> List[InvoiceModel]:
+        result = conn.cursor().execute("""
+            SELECT INVOICE_ID, CUSTOMER_ID, CUSTOMER_NAME, MONTH
+            FROM INVOICES
+            WHERE MONTH = ?
+        """, (month, )).fetchall()
+        return [InvoiceModel(cid, cname, month, id) for id, cid, cname, month in result]
+
     
     def get_lines(conn: Connection, invoice: InvoiceModel) -> List[InvoiceLineModel]:
         result = conn.cursor().execute("""

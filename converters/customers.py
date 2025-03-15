@@ -14,6 +14,6 @@ class CustomerConverter(DataConverter):
         """
 
     def to_tuple(self, row):
-        return (row["ID"], row["NAME"], row["ACCESS_POINT"], row["MONTHLY_AMOUNT_DUE"] * 100)
+        return (row["ID"], row["NAME"], row["ACCESS_POINT"], int(row["MONTHLY_AMOUNT_DUE"]) * 100)
 
     

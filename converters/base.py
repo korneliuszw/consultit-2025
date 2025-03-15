@@ -29,7 +29,6 @@ class DataConverter(ABC):
         cursor = conn.cursor()
         if self.data == None or len(self.data) == 0:
             raise Exception("Empty data")
-        print(self.get_query(), self.data)
         cursor.executemany(self.get_query(), self.data)
         conn.commit()
         cursor.close()

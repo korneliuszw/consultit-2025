@@ -7,11 +7,14 @@ from dao.invoice import InvoiceDAO, InvoiceLineModel, InvoiceModel
 
 out_dir = environ.get("INVOICE_CSV_OUT_DIR", path.join(os.getcwd(), "output"))
 
-if path.isfile(out_dir):
-    raise Exception("Output directory is a file not a directory")
-elif not path.exists(out_dir):
-    print("Output directory doesn't exist. Creating it now")
-    mkdir(out_dir)
+def ensure_dir(dir):
+    if path.isfile(dir):
+        raise Exception(f"Directory {dir} is a file not a directory")
+    elif not path.exists(dir):
+        print(f"Directory {dir} doesn't exist. Creating it now")
+        mkdir(dir)
+
+ensure_dir(out_dir)
 
 def get_invoice_name(invoice: InvoiceModel):
     return f"invoice_{invoice.id}_{invoice.customer_id}"

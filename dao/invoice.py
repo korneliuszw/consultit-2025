@@ -54,5 +54,5 @@ class InvoiceDAO:
             SELECT LINE_NUMBER, TITLE, LINE_AMOUNT
             FROM INVOICE_LINES
             WHERE INVOICE_ID = ?
-        """, (str(invoice.id))).fetchall()
+        """, (str(invoice.id), )).fetchall()
         return [InvoiceLineModel(invoice, line, title, amount) for line, title, amount in result]

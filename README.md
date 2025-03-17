@@ -27,7 +27,7 @@ You can run multiple commands but they are chained so make sure they follow a lo
 
 Example:
 ```bash
-python ./main.py createDatabase loadData generateInvoice "01.2025"
+python ./main.py createDatabase loadData generateInvoice "01.2025" invoicesToCSV invoicesToPDF
 ```
 
 

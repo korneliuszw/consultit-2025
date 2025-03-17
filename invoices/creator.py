@@ -31,7 +31,7 @@ def preprocess_downtime(downtime: TelemetryLogModel) -> ProcessedDowntimeType:
     dates = []
     while True:
         if start.month != month or start > end:
-            break;
+            break
         dates.append(start)
         start += timedelta(days=1)
     return (downtime.access_point_id, dates)

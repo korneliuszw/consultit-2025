@@ -35,3 +35,11 @@ python ./main.py createDatabase loadData generateInvoice "01.2025" invoicesToCSV
 Diagram: https://dbdiagram.io/d/consultit-case-study-1-67d451b475d75cc8441eef71
 
 For now, database is stored in hardcoded path ./network.db
+
+# ConsultIT Etap 2
+
+## Users
+
+For simplicity some assumptions were made for authentication and authorization.
+Users can only have one role, either serviceman or consultant. There can be only one active session, so they can't be logged in two places at once.
+To add new users you send a POST requests with special token as Authorization header (so we don't have to implement administator users as to not raise additional costs to development).

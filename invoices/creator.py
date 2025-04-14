@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import functools
 from math import floor
 from sqlite3 import Connection
 from typing import List
@@ -8,6 +9,7 @@ from dao.customers import CustomerDAO, CustomerModel
 from dao.invoice import InvoiceDAO, InvoiceLineModel, InvoiceLineTitle, InvoiceModel
 from dao.telemetry import TelemetryLogDAO, TelemetryLogModel
 
+# TODO: Run this once, on start
 def create_device_lookup_table(devices: AccessPointModel) -> dict[str, set[str]]:
     """This assumes devices are sorted by their device order!"""
     """Builds a map of connections between device and customer devices"""

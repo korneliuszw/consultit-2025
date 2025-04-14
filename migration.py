@@ -79,6 +79,19 @@ def create_invoices_lines(conn: Connection):
     ''')
     conn.commit()
 
+def create_users(conn: Connection):
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS USERS")
+    cursor.execute('''
+        CREATE TABLE USERS (
+          ID INTEGER PRIMARY KEY,
+          LOGIN VARCHAR(50) NOT NULL UNIQUE,
+          PASSWORD_HASH BLOB NOT NULL,
+          ROLE VARCHAR(20) NOT NULL CHECK (ROLE IN ('CONSULTANT', 'SERVICEMAN')),
+          CURRENT_SESSION_ID VARCHAR(36)
+        );
+    ''')
+
 
 def create_tables(conn: Connection):
     create_network_infrastructure(conn)
@@ -86,3 +99,4 @@ def create_tables(conn: Connection):
     create_downtime_log(conn)
     create_invoices(conn)
     create_invoices_lines(conn)
+    create_users(conn)

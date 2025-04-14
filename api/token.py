@@ -1,0 +1,68 @@
+from datetime import timedelta, datetime, timezone
+from uuid import UUID
+
+import jwt
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from pydantic import BaseModel
+
+from api.db import conn
+from dao.users import UserRole, UserDAO
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+SECRET_KEY="your_secret_key"
+ALGORITHM="HS256"
+
+credentials_exception = HTTPException(
+    status_code=401,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    uid: int
+    scopes: list[UserRole] = []
+    sid: UUID
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_token(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        uid: int = payload.get("uid")
+        if uid is None:
+            raise credentials_exception
+        scopes: list[UserRole] = payload.get("scopes")
+        sid = UUID(payload.get("sid"))
+        return TokenData(uid=uid, sid=sid, scopes=scopes)
+    except jwt.PyJWTError:
+        raise credentials_exception
+
+async def get_current_user(token: TokenData = Depends(get_token)):
+    user_in_db = UserDAO.get_by_id(conn, token.uid)
+    if user_in_db is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    elif user_in_db.current_session_id != token.sid:
+        raise HTTPException(
+            status_code=401,
+            detail="Session expired",
+        )
+    return user_in_db
+

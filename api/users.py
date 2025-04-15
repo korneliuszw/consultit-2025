@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api.auth import create_access_token, Token, AdminRequired, AnyUser
-from api.models.user import NewUserRequest
+from api.schemas.user import NewUserSchema
 from database import SessionDep
 from models import UserRole, UserModel
 from repository import UserRepository
@@ -43,13 +43,14 @@ async def login_user(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.post("/{role}")
+@router.post(
+    "/{role}", status_code=201, responses={409: {"description": "User already exists"}}
+)
 async def create_user(
-    _: AdminRequired, role: UserRole, new_user: NewUserRequest, session: SessionDep
+    _: AdminRequired, role: UserRole, new_user: NewUserSchema, session: SessionDep
 ):
     print(role)
     model = UserModel(
-        id=None,
         login=new_user.login,
         password_hash=password_hash(new_user.password),
         role=role.value,
@@ -58,7 +59,7 @@ async def create_user(
     try:
         UserRepository.create_user(session, model)
     except sqlite3.IntegrityError:
-        return {"status": "error", "message": "User already exists"}
+        raise HTTPException(409, "User already exists")
 
     return {"status": "ok", "user": model}
 

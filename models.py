@@ -97,7 +97,7 @@ class UserModel(ModelBase):
     password_hash: Mapped[bytes] = mapped_column(LargeBinary)
     role: Mapped[UserRole] = mapped_column()
     current_session_id: Mapped[Optional[UUID]] = mapped_column(
-        String(36), nullable=True
+        UUID(as_uuid=True), nullable=True
     )
 
     def __repr__(self):

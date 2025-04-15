@@ -1,15 +1,16 @@
 from unittest.mock import patch
 
-import bcrypt
 from starlette.testclient import TestClient
 
-from dao.users import UserDAO, UserRole, UserModel
+from models import UserModel, UserRole
+from repository import UserRepository
 from start_api import app
+from utils import password_hash
 
 client = TestClient(app)
 
 
-@patch.object(UserDAO, "get_by_login", return_value=None)
+@patch.object(UserRepository, "get_by_login", return_value=None)
 def test_login_fail_incorrect_username(mocked):
     response = client.post(
         "/users/login",
@@ -20,10 +21,13 @@ def test_login_fail_incorrect_username(mocked):
 
 
 @patch.object(
-    UserDAO,
+    UserRepository,
     "get_by_login",
     return_value=UserModel(
-        1, "admin", bcrypt.hashpw(b"notvalid", bcrypt.gensalt()), "ADMIN", None
+        id=1,
+        login="admin",
+        password_hash=password_hash("not_valid"),
+        role=UserRole.ADMIN,
     ),
 )
 def test_login_fail_incorrect_password(mocked):
@@ -35,20 +39,23 @@ def test_login_fail_incorrect_password(mocked):
     assert response.json() == {"detail": "Invalid username or password"}
 
 
-@patch.object(
-    UserDAO,
-    "get_by_login",
-    return_value=UserModel(
-        1, "admin", bcrypt.hashpw(b"test", bcrypt.gensalt()), "ADMIN", None
-    ),
-)
-def login_as_admin(mocked):
+def login_as_admin():
     return client.post(
         "/users/login",
         data={"username": "admin", "password": "test"},
     )
 
 
+@patch.object(
+    UserRepository,
+    "get_by_login",
+    return_value=UserModel(
+        id=1,
+        login="admin",
+        password_hash=password_hash("test"),
+        role=UserRole.ADMIN,
+    ),
+)
 def test_login_success(mocked):
     response = login_as_admin()
     assert response.status_code == 200
@@ -56,9 +63,20 @@ def test_login_success(mocked):
     assert response.json()["token_type"] == "bearer"
 
 
-@patch.object(UserDAO, "create_user")
-def test_user_create(mocked_method):
+@patch.object(
+    UserRepository,
+    "get_by_login",
+    return_value=UserModel(
+        id=1,
+        login="admin",
+        password_hash=password_hash("test"),
+        role=UserRole.ADMIN,
+    ),
+)
+@patch.object(UserRepository, "create_user")
+def test_user_create(mocked_login, mocked_method):
     response = login_as_admin()
+    print(response.json())
     response = client.post(
         "/users/CONSULTANT",
         headers={"Authorization": f"Bearer {response.json()['access_token']}"},

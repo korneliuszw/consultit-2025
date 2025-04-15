@@ -7,22 +7,27 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
 from api.auth import create_access_token, Token, AdminRequired, AnyUser
-from api.db import conn
 from api.models.user import NewUserRequest
-from dao.users import UserDAO, UserRole, UserModel
+from database import SessionDep
+from models import UserRole, UserModel
+from repository import UserRepository
+from utils import password_hash
 
 router = APIRouter(prefix="/users")
 
 
 @router.post("/login")
-async def login_user(data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    db_user = UserDAO.get_by_login(conn, data.username)
+async def login_user(
+    data: Annotated[OAuth2PasswordRequestForm, Depends()], session: SessionDep
+):
+    db_user = UserRepository.get_by_login(session, data.username)
     if db_user is None or not bcrypt.checkpw(
         data.password.encode("utf-8"), db_user.password_hash
     ):
         raise HTTPException(status_code=400, detail="Invalid username or password")
     session_id = uuid.uuid4()
-    UserDAO.open_session(conn, db_user.id, session_id)
+    db_user.current_session_id = session_id
+    session.commit()
     if db_user.role == UserRole.ADMIN:
         scopes = [
             UserRole.ADMIN.value,
@@ -39,18 +44,19 @@ async def login_user(data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 
 @router.post("/{role}")
-async def create_user(_: AdminRequired, role: UserRole, new_user: NewUserRequest):
-    password_hash = bcrypt.hashpw(new_user.password.encode("utf-8"), bcrypt.gensalt())
+async def create_user(
+    _: AdminRequired, role: UserRole, new_user: NewUserRequest, session: SessionDep
+):
     print(role)
     model = UserModel(
         id=None,
         login=new_user.login,
-        password_hash=password_hash,
+        password_hash=password_hash(new_user.password),
         role=role.value,
         current_session_id=None,
     )
     try:
-        UserDAO.create_user(conn, model)
+        UserRepository.create_user(session, model)
     except sqlite3.IntegrityError:
         return {"status": "error", "message": "User already exists"}
 

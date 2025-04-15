@@ -7,8 +7,9 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from pydantic import BaseModel
 
-from api.db import conn
-from dao.users import UserRole, UserDAO, UserModel
+from database import SessionDep
+from models import UserRole, UserModel
+from repository import UserRepository
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/users/login",
@@ -72,8 +73,10 @@ async def get_token(
         raise credentials_exception
 
 
-async def get_current_user(token: TokenData = Depends(get_token)) -> UserModel:
-    user_in_db = UserDAO.get_by_id(conn, token.uid)
+async def get_current_user(
+    session: SessionDep, token: TokenData = Depends(get_token)
+) -> UserModel:
+    user_in_db = UserRepository.get_by_id(session, token.uid)
     if user_in_db is None:
         raise HTTPException(
             status_code=401,

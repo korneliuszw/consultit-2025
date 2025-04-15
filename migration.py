@@ -1,9 +1,15 @@
 from sqlite3 import Connection
 
+import bcrypt
+
+from dao.users import UserDAO, UserModel, UserRole
+
+
 def create_network_infrastructure(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS NETWORK_INFRASTRUCTURE")
-    cursor.execute('''
+    cursor.execute(
+        """
     CREATE TABLE NETWORK_INFRASTRUCTURE (
         ACCESS_POINT_ID VARCHAR(100) PRIMARY KEY,
         NAME TEXT NOT NULL,
@@ -15,13 +21,16 @@ def create_network_infrastructure(conn: Connection):
         ),
         FOREIGN KEY (PARENT_ACCESS_POINT_ID) REFERENCES NETWORK_INFRASTRUCTURE(ACCESS_POINT_ID)
     )
-    ''')
+    """
+    )
     conn.commit()
+
 
 def create_customers(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS Customers")
-    cursor.execute('''
+    cursor.execute(
+        """
     CREATE TABLE CUSTOMERS (
         ID VARCHAR(50) PRIMARY KEY,
         NAME TEXT NOT NULL,
@@ -29,14 +38,17 @@ def create_customers(conn: Connection):
         MONTHLY_AMOUNT_DUE INTEGER DEFAULT 0,
         FOREIGN KEY (ACCESS_POINT) REFERENCES NETWORK_INFRASTRUCTURE(ACCESS_POINT_ID)
     )
-    ''')
+    """
+    )
 
     conn.commit()
+
 
 def create_downtime_log(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS TELEMETRY_DOWNTIME_LOG")
-    cursor.execute('''
+    cursor.execute(
+        """
     CREATE TABLE TELEMETRY_DOWNTIME_LOG (
         DOWNTIME_ID INTEGER PRIMARY KEY,
         ACCESS_POINT_ID VARCHAR(100) NOT NULL,
@@ -44,16 +56,21 @@ def create_downtime_log(conn: Connection):
         DOWNTIME_END_DATE TIMESTAMP NOT NULL,
         FOREIGN KEY (ACCESS_POINT_ID) REFERENCES NETWORK_INFRASTRUCTURE(ACCESS_POINT_ID)
     )
-    ''')
-    cursor.execute('''
+    """
+    )
+    cursor.execute(
+        """
         CREATE INDEX idx_downtime_start_date ON TELEMETRY_DOWNTIME_LOG(DOWNTIME_START_DATE)
-    ''')
+    """
+    )
     conn.commit()
+
 
 def create_invoices(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS INVOICES")
-    cursor.execute('''
+    cursor.execute(
+        """
     CREATE TABLE INVOICES (
         INVOICE_ID INTEGER PRIMARY KEY AUTOINCREMENT,
         CUSTOMER_ID VARCHAR(50) NOT NULL,
@@ -61,13 +78,16 @@ def create_invoices(conn: Connection):
         MONTH VARCHAR(10) NOT NULL,
         FOREIGN KEY (CUSTOMER_ID) REFERENCES Customers(ID)
     )
-    ''')
+    """
+    )
     conn.commit()
+
 
 def create_invoices_lines(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS INVOICE_LINES")
-    cursor.execute('''
+    cursor.execute(
+        """
     CREATE TABLE INVOICE_LINES (
         INVOICE_ID INTEGER,
         LINE_NUMBER INTEGER,
@@ -76,21 +96,31 @@ def create_invoices_lines(conn: Connection):
         PRIMARY KEY (INVOICE_ID, LINE_NUMBER),
         FOREIGN KEY (INVOICE_ID) REFERENCES INVOICES(INVOICE_ID)
     )
-    ''')
+    """
+    )
     conn.commit()
+
 
 def create_users(conn: Connection):
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS USERS")
-    cursor.execute('''
+    cursor.execute(
+        """
         CREATE TABLE USERS (
           ID INTEGER PRIMARY KEY,
           LOGIN VARCHAR(50) NOT NULL UNIQUE,
           PASSWORD_HASH BLOB NOT NULL,
-          ROLE VARCHAR(20) NOT NULL CHECK (ROLE IN ('CONSULTANT', 'SERVICEMAN')),
+          ROLE VARCHAR(20) NOT NULL CHECK (ROLE IN ('CONSULTANT', 'SERVICEMAN', 'ADMIN')),
           CURRENT_SESSION_ID VARCHAR(36)
         );
-    ''')
+    """
+    )
+    # TODO: Don't hardcode this
+    admin_password = bcrypt.hashpw("admin".encode("utf-8"), bcrypt.gensalt())
+    UserDAO.create_user(
+        conn,
+        UserModel(None, "admin", admin_password, UserRole.ADMIN.value, None),
+    )
 
 
 def create_tables(conn: Connection):

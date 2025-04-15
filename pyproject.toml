@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "consultit-isp"
+version = "0.1.0"
+requires-python = ">=3.12"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+addopts = [
+    "--import-mode=importlib",
+]

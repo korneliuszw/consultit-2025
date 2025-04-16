@@ -41,6 +41,7 @@ def create_single_pdf(session: Session, invoice: InvoiceModel):
         month=invoice.month,
     )
     HTML(string=html).write_pdf(out_path)
+    return out_path
 
 
 def generate_pdf_invoices_for_all(month: str):

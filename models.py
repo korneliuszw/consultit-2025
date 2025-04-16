@@ -19,10 +19,12 @@ class AccessPointModel(ModelBase):
     )
     device_order: Mapped[int] = mapped_column()
 
-    parent: Mapped["AccessPointModel"] = relationship("AccessPointModel")
+    parent: Mapped["AccessPointModel"] = relationship(remote_side="AccessPointModel.id")
+
     telemetry_logs: Mapped[List["TelemetryLogModel"]] = relationship(
         back_populates="access_point"
     )
+    customer: Mapped["CustomerModel"] = relationship(back_populates="device")
 
     def __repr__(self):
         return f"AccessPointModel(id={self.id}, name={self.name}, parentAccessPointId={self.parent_access_point_id}), deviceOrder={self.device_order})"
@@ -53,6 +55,7 @@ class CustomerModel(ModelBase):
     name: Mapped[str] = mapped_column()
     access_point: Mapped[str] = mapped_column(ForeignKey(AccessPointModel.id))
     monthly_amount_due: Mapped[int] = mapped_column(default=0)
+    device: Mapped["AccessPointModel"] = relationship(back_populates="customer")
 
     def __repr__(self):
         return f"CustomerModel(id={self.id}, name={self.name}, access_point={self.access_point}, monthly_amount_due={self.monthly_amount_due})"

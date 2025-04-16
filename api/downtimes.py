@@ -10,6 +10,7 @@ from models import TelemetryLogModel
 
 router = APIRouter(
     prefix="/downtimes",
+    tags=["downtimes"],
 )
 
 

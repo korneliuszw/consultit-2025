@@ -13,7 +13,7 @@ from models import UserRole, UserModel
 from repository import UserRepository
 from utils import password_hash
 
-router = APIRouter(prefix="/users")
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.post("/login")

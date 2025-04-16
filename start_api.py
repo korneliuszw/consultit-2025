@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 
-from api import users, downtimes, infrastructure
+from api import users, downtimes, infrastructure, invoices, customers
 
 app = FastAPI()
 app.include_router(users.router)
 app.include_router(downtimes.router)
 app.include_router(infrastructure.router)
+app.include_router(invoices.router)
+app.include_router(customers.router)
 
 
 @app.get("/healthcheck")

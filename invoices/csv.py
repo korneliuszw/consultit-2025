@@ -39,6 +39,7 @@ def create_single_csv(session: Session, invoice: InvoiceModel):
         writer.writerow(["LINE_NUMBER", "TITLE", "LINE_AMOUNT"])
         for line in lines:
             writer.writerow([line.line_number, line.title, line.amount / 100])
+    return out_path
 
 
 def generate_invoices_for_all(month=None):

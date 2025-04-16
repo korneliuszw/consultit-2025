@@ -11,6 +11,7 @@ from models import AccessPointModel
 
 router = APIRouter(
     prefix="/infrastructure",
+    tags=["infrastructure"],
 )
 
 

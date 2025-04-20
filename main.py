@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 
 from converters.convert import convert_data
+from data.subscription_plans import create_subscription_plans
 from database import engine, DbSession
 from invoices.creator import generate_invoices
 from invoices.csv import generate_invoices_for_all
@@ -50,3 +51,6 @@ with engine.connect() as conn:
                     ),
                 )
                 session.commit()
+        elif x == "createSubscriptionPlans":
+            with DbSession() as session:
+                create_subscription_plans(session)

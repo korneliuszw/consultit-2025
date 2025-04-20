@@ -77,7 +77,7 @@ class CustomerModel(ModelBase):
     marketing_bonus: Mapped[bool] = mapped_column(default=False)
     einvoice_bonus: Mapped[bool] = mapped_column(default=False)
     subscription_plan_id: Mapped[int] = mapped_column(
-        ForeignKey(SubscriptionModel.plan_id)
+        ForeignKey(SubscriptionModel.plan_id), default=0
     )
     device: Mapped["AccessPointModel"] = relationship(back_populates="customer")
     subscription: Mapped["SubscriptionModel"] = relationship(

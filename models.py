@@ -2,11 +2,19 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 
-from sqlalchemy import ForeignKey, String, UUID, LargeBinary
+from sqlalchemy import ForeignKey, String, UUID, LargeBinary, MetaData
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 
 class ModelBase(DeclarativeBase):
+    uppercase_naming_convention = {
+        "ix": "IX_%(table_name)s_%(column_0_N_name)s",  # Indexes
+        "uq": "UQ_%(table_name)s_%(column_0_N_name)s",  # Unique constraints
+        "ck": "CK_%(table_name)s_%(constraint_name)s",  # Check constraints
+        "fk": "FK_%(table_name)s_%(column_0_N_name)s_%(referred_table_name)s",  # Foreign keys
+        "pk": "PK_%(table_name)s",  # Primary keys
+    }
+    metadata = MetaData(naming_convention=uppercase_naming_convention)
     pass
 
 
@@ -49,13 +57,32 @@ class InvoiceLineTitle(Enum):
     REBATE = "REBATE"
 
 
+class SubscriptionModel(ModelBase):
+    __tablename__ = "SUBSCRIPTION_PLAN"
+    plan_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column()
+    base_price: Mapped[int] = mapped_column()
+    final_price_formula: Mapped[str] = mapped_column()
+    subscribers: Mapped[List["CustomerModel"]] = relationship(
+        back_populates="subscription"
+    )
+
+
 class CustomerModel(ModelBase):
     __tablename__ = "CUSTOMER"
     id: Mapped[str] = mapped_column(String(50), primary_key=True)
     name: Mapped[str] = mapped_column()
     access_point: Mapped[str] = mapped_column(ForeignKey(AccessPointModel.id))
-    monthly_amount_due: Mapped[int] = mapped_column(default=0)
+    owned_ip_addresses: Mapped[int] = mapped_column(default=0)
+    marketing_bonus: Mapped[bool] = mapped_column(default=False)
+    einvoice_bonus: Mapped[bool] = mapped_column(default=False)
+    subscription_plan_id: Mapped[int] = mapped_column(
+        ForeignKey(SubscriptionModel.plan_id)
+    )
     device: Mapped["AccessPointModel"] = relationship(back_populates="customer")
+    subscription: Mapped["SubscriptionModel"] = relationship(
+        back_populates="subscribers"
+    )
 
     def __repr__(self):
         return f"CustomerModel(id={self.id}, name={self.name}, access_point={self.access_point}, monthly_amount_due={self.monthly_amount_due})"
@@ -67,6 +94,8 @@ class InvoiceModel(ModelBase):
     customer_id: Mapped[str] = mapped_column(ForeignKey(CustomerModel.id))
     customer_name: Mapped[str] = mapped_column()
     month: Mapped[str] = mapped_column(String(10))
+    subscription_plan_name: Mapped[str] = mapped_column()
+    subscription_used_formula: Mapped[str] = mapped_column()
     lines: Mapped[List["InvoiceLineModel"]] = relationship(back_populates="invoice")
 
     def __repr__(self):

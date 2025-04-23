@@ -70,10 +70,20 @@ the API, docs are available on /docs page.
 ## Testing
 
 The problem asks the question how we are going to test the API before it's shipped to other development team.
-Because the API is small and our team is small, we didn't have enough time to write a unit and integration tests. If
+Because the API is small and our team is small, we didn't have enough time to write all integration tests. If
 this app was a real, production-ready solution we would have shipped them. As for now, we test the API using Swagger,
-manually running changed endpoints and testing the results. It's not the best approach, but it's the fastest one for
+manually running changed endpoints and testing the results. We've added tests for downtime days calculation and formula
+evalution as those are critical parts of the app that are the hardest to validate. It's not the best approach, but it's
+the fastest one for
 one-shot project like this.
+
+Running these few tests we've written is done by
+
+```bash
+pytest
+```
+
+Mock database is created for every single test
 
 ## Users
 
@@ -91,3 +101,18 @@ CONSULTANT.
 - ADMIN: Can do everything
 - CONSULTANT: Has access to everything related to customers, subscription plans and invoices
 - SERVICEMAN: Can see, modify and create downtimes
+
+### Subscription plans
+
+By default all existing customers (from csv or existing before) have empty subscription plan assigned. So generated
+invoice will have value of exactly 0. To assign a subscription plan, send /customers/subscription POST request.
+
+## Full example of running this project
+
+```bash
+alembic upgrade head
+python main.py createAdmin admin admin loadData
+python main.py createSubscriptionPlans
+python main.py generateInvoice 01.2025 invoicesToCSV 01.2025 invoicesToPdf 01.2025
+fastapi run start_api.py
+```

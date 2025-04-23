@@ -17,6 +17,11 @@ def create_subscription_plans(session: Session):
             base_price=10000,
             final_price_formula="BASE_PRICE + 500 * max(IP_COUNT - 1, 0) - 2 * DOWNTIME_DAYS * DAILY_RATE",
         ),
+        SubscriptionModel(
+            name="Klient SME Światłowód symetryczny 500Mbps All inclusive",
+            base_price=10000,
+            final_price_formula="BASE_PRICE + 500 * max(IP_COUNT - 1, 0) - 2 * DOWNTIME_DAYS * DAILY_RATE - 500 * EINVOICE_BONUS - 500 * MARKETING_BONUS",
+        ),
     ]
     session.add_all(plans)
     session.commit()

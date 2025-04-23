@@ -27,7 +27,7 @@ def generate_invoices(month):
 def generate_single_invoice(session: Session, month, customer: CustomerModel):
     subscription = customer.subscription
     formula_evaluator = FormulaEval(
-        customer=customer, subscription=subscription, month=month
+        customer=customer, subscription=subscription, month=month, session=session
     )
     total = formula_evaluator.eval(subscription.final_price_formula)
     invoice = InvoiceModel(

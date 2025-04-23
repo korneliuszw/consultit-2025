@@ -2,20 +2,25 @@ from functools import cached_property
 from math import floor
 
 from simpleeval import SimpleEval
+from sqlalchemy.orm import Session
 
-from database import DbSession
 from invoices.downtime_calculator import calculate_customer_downtime
 from models import CustomerModel, SubscriptionModel
 
 
 class FormulaVariables:
     def __init__(
-        self, customer: CustomerModel, subscription: SubscriptionModel, month: str
+        self,
+        customer: CustomerModel,
+        subscription: SubscriptionModel,
+        month: str,
+        session: Session,
     ):
         self.customer = customer
         self.subscription = subscription
         self.month = month
         self.used_variables = set()
+        self.session = session
 
     @cached_property
     def BASE_PRICE(self):
@@ -39,10 +44,9 @@ class FormulaVariables:
 
     @cached_property
     def DOWNTIME_DAYS(self):
-        with DbSession() as session:
-            downtimes = calculate_customer_downtime(session, self.customer, self.month)
-            self.used_variables.add(("DOWNTIME_DAYS", downtimes))
-            return downtimes
+        downtimes = calculate_customer_downtime(self.session, self.customer, self.month)
+        self.used_variables.add(("DOWNTIME_DAYS", downtimes))
+        return downtimes
 
     @cached_property
     def DAILY_RATE(self):
@@ -56,7 +60,11 @@ class FormulaVariables:
 
 class FormulaEval(SimpleEval):
     def __init__(
-        self, customer: CustomerModel, subscription: SubscriptionModel, month: str
+        self,
+        customer: CustomerModel,
+        subscription: SubscriptionModel,
+        month: str,
+        session: Session,
     ):
         super().__init__()
         self.functions.update(
@@ -65,7 +73,7 @@ class FormulaEval(SimpleEval):
             floor=floor,
         )
         self.names = FormulaVariables(
-            customer=customer, subscription=subscription, month=month
+            customer=customer, subscription=subscription, month=month, session=session
         )
 
     def get_used_variables(self):

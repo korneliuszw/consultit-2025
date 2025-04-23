@@ -69,6 +69,7 @@ def load_client_downtimes_for_month(
             TelemetryLogRepository.get_in_month(session, month, affected_devices),
         )
     )
+    print(TelemetryLogRepository.get_in_month(session, month))
     return process_downtimes(downtimes, device_lookup)
 
 

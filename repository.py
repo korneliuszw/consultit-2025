@@ -77,6 +77,6 @@ class TelemetryLogRepository:
         query = session.query(TelemetryLogModel).filter(
             func.strftime("%m.%Y", TelemetryLogModel.start_date) == month
         )
-        if device_ids != None:
+        if device_ids is not None:
             query = query.filter(TelemetryLogModel.access_point_id.in_(device_ids))
         return query.all()

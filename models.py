@@ -52,11 +52,6 @@ class TelemetryLogModel(ModelBase):
         return f"TelemetryLogModel(downtime_id={self.downtime_id}, access_point_id={self.access_point_id}, start_date={self.start_date}, end_date={self.end_date})"
 
 
-class InvoiceLineTitle(Enum):
-    SUBSCRIPTION = "SUBSCRIPTION"
-    REBATE = "REBATE"
-
-
 class SubscriptionModel(ModelBase):
     __tablename__ = "SUBSCRIPTION_PLAN"
     plan_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -108,7 +103,7 @@ class InvoiceLineModel(ModelBase):
         ForeignKey(InvoiceModel.id), primary_key=True
     )
     line_number: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[InvoiceLineTitle] = mapped_column()
+    title: Mapped[str] = mapped_column()
     amount: Mapped[int] = mapped_column()
     invoice: Mapped["InvoiceModel"] = relationship(back_populates="lines")
 

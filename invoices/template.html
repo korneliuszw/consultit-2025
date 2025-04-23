@@ -10,6 +10,7 @@
         - title
         - amount
     - total
+    - formula
 </%doc>
 <!DOCTYPE html>
 <html>
@@ -162,14 +163,19 @@
 
             <tr class="item">
                 <td>${item.title}</td>
+                % if type(item.amount) is bool:
+                    <td>${"YES" if item.amount else "NO"}</td>
+                % else:
                 <td>$${item.amount / 100}</td>
+                % endif
             </tr>
-
             %endfor
             <tr class="total">
                 <td></td>
-
                 <td>Total: $${total / 100}</td>
+            </tr>
+            <tr>
+                <td>Formula: ${formula}</td>
             </tr>
         </table>
     </div>

@@ -26,10 +26,14 @@ elif not path.exists(out_dir):
 def create_single_pdf(session: Session, invoice: InvoiceModel):
     out_path = path.join(out_dir, f"{get_invoice_name(invoice)}.pdf")
     items: List[InvoiceLineModel] = InvoiceRepository.get_lines(invoice)
+    total = items[-1].amount
+    items = items[:-1]
+    for item in items:
+        if "BONUS" in item.title:
+            item.amount = bool(item.title)
     creation_date = str(datetime.now().date())
     customer_address = "ul. Wyspiańskiego 5A"
     customer_city = "80-434 Gdańsk"
-    total = sum([line.amount for line in items])
     html = template.render(
         total=total,
         customer_name=invoice.customer_name,
@@ -39,6 +43,7 @@ def create_single_pdf(session: Session, invoice: InvoiceModel):
         creation_date=creation_date,
         invoice_id=invoice.id,
         month=invoice.month,
+        formula=invoice.subscription_used_formula,
     )
     HTML(string=html).write_pdf(out_path)
     return out_path

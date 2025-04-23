@@ -38,7 +38,11 @@ def create_single_csv(session: Session, invoice: InvoiceModel):
         writer.writerow([invoice.id, invoice.customer_id, invoice.customer_name])
         writer.writerow(["LINE_NUMBER", "TITLE", "LINE_AMOUNT"])
         for line in lines:
-            writer.writerow([line.line_number, line.title, line.amount / 100])
+            if "BONUS" in line.title:
+                line.amount = "YES" if line.title else "NO"
+            else:
+                line.amount = line.amount / 100
+            writer.writerow([line.line_number, line.title, line.amount])
     return out_path
 
 

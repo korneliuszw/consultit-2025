@@ -49,7 +49,6 @@ async def login_user(
 async def create_user(
     _: AdminRequired, role: UserRole, new_user: NewUserSchema, session: SessionDep
 ):
-    print(role)
     model = UserModel(
         login=new_user.login,
         password_hash=password_hash(new_user.password),

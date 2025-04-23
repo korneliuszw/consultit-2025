@@ -40,8 +40,6 @@ def test_user_create(db, client):
         headers={"Authorization": f"Bearer {response.json()['access_token']}"},
         json={"login": "testuser", "password": "test"},
     )
-    print(db.query(UserModel).all())
-    print(response.json())
     assert response.status_code == 201
     assert response.json()["status"] == "ok"
     assert response.json()["user"]["login"] == "testuser"

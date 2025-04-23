@@ -25,11 +25,6 @@ def test_invoice_generate_formula_with_downtimes(seed_database):
     customer.owned_ip_addresses = 0
     seed_database.commit()
     invoice = generate_single_invoice(seed_database, "01.2025", customer)
-    print(
-        seed_database.query(InvoiceLineModel)
-        .filter(invoice.id == InvoiceLineModel.invoice_id)
-        .all()
-    )
     assert (
         seed_database.query(InvoiceLineModel)
         .filter(

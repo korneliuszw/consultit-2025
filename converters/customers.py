@@ -10,7 +10,6 @@ class CustomerConverter(DataConverter[CustomerModel]):
             id=row["ID"],
             name=row["NAME"],
             access_point=row["ACCESS_POINT"],
-            # monthly_amount_due=int(row["MONTHLY_AMOUNT_DUE"]) * 100,
         )
 
     def __init__(self):

@@ -2,14 +2,12 @@ import sys
 from datetime import datetime
 
 from converters.convert import convert_data
+from data.admin import create_admin
 from data.subscription_plans import create_subscription_plans
 from database import engine, DbSession
 from invoices.creator import generate_invoices
 from invoices.csv import generate_invoices_for_all
 from invoices.pdf import generate_pdf_invoices_for_all
-from models import UserModel, UserRole
-from repository import UserRepository
-from utils import password_hash
 
 
 def get_month_from_cli(cur_idx, optional=False):
@@ -39,18 +37,8 @@ with engine.connect() as conn:
         elif x == "createAdmin":
             login = sys.argv[idx + 1]
             password = sys.argv[idx + 2]
-            if len(login) < 2 or len(password) < 2:
-                raise Exception("Login and password must be at least 2 characters")
             with DbSession() as session:
-                UserRepository.create_user(
-                    session,
-                    UserModel(
-                        login=login,
-                        password_hash=password_hash(password),
-                        role=UserRole.ADMIN,
-                    ),
-                )
-                session.commit()
+                create_admin(session, login, password)
         elif x == "createSubscriptionPlans":
             with DbSession() as session:
                 create_subscription_plans(session)

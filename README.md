@@ -1,4 +1,4 @@
-# ConsultIT Etap 1
+G# ConsultIT Etap 1
 
 ## Running
 
@@ -35,7 +35,7 @@ Commands:
 - generateInvoice (MM.YYYY): Generates invoices for a month and inserts them to database
 - invoicesToCSV (MM.YYYY optional): Generates CSV for invoices. Omit a month to generate for all invoices in the
   database
-- invoicesToPDF (MM.YYYY optional): Generates PDF for invoices. Omit a month to generate for all invoices in the
+- invoicesToPdf (MM.YYYY optional): Generates PDF for invoices. Omit a month to generate for all invoices in the
   database
 
 You can run multiple commands but they are chained so make sure they follow a logical order
@@ -43,7 +43,7 @@ You can run multiple commands but they are chained so make sure they follow a lo
 Example:
 
 ```bash
-python ./main.py loadData generateInvoice "01.2025" invoicesToCSV invoicesToPDF
+python ./main.py loadData generateInvoice "01.2025" invoicesToCSV invoicesToPdf
 ```
 
 ## Database

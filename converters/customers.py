@@ -1,19 +1,16 @@
 from os import environ
 
 from converters.base import DataConverter
+from models import CustomerModel
 
-class CustomerConverter(DataConverter):
+
+class CustomerConverter(DataConverter[CustomerModel]):
+    def to_model(self, row) -> CustomerModel:
+        return CustomerModel(
+            id=row["ID"],
+            name=row["NAME"],
+            access_point=row["ACCESS_POINT"],
+        )
+
     def __init__(self):
         super().__init__(environ.get("CUSTOMERS_DATA", "./data/customers.csv"))
-
-    def get_query(self):
-        return """
-            INSERT INTO CUSTOMERS 
-                (ID, NAME, ACCESS_POINT, MONTHLY_AMOUNT_DUE)
-                VALUES (?, ?, ?, ?)
-        """
-
-    def to_tuple(self, row):
-        return (row["ID"], row["NAME"], row["ACCESS_POINT"], int(row["MONTHLY_AMOUNT_DUE"]) * 100)
-
-    

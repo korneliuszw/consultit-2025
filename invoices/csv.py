@@ -1,11 +1,16 @@
-import csv
-from os import environ, mkdir, path
 import os
-from sqlite3 import Connection
+from os import environ, mkdir, path
 from typing import List
-from dao.invoice import InvoiceDAO, InvoiceLineModel, InvoiceModel
+
+from sqlalchemy.orm import Session
+
+import csv
+from database import DbSession
+from models import InvoiceModel, InvoiceLineModel
+from repository import InvoiceRepository
 
 out_dir = environ.get("INVOICE_CSV_OUT_DIR", path.join(os.getcwd(), "output"))
+
 
 def ensure_dir(dir):
     if path.isfile(dir):
@@ -14,24 +19,39 @@ def ensure_dir(dir):
         print(f"Directory {dir} doesn't exist. Creating it now")
         mkdir(dir)
 
+
 ensure_dir(out_dir)
+
 
 def get_invoice_name(invoice: InvoiceModel):
     return f"invoice_{invoice.id}_{invoice.customer_id}_{invoice.month}"
 
-def create_single_csv(conn: Connection, invoice: InvoiceModel):
+
+def create_single_csv(session: Session, invoice: InvoiceModel):
     out_path = path.join(out_dir, f"{get_invoice_name(invoice)}.csv")
-    lines: List[InvoiceLineModel] = InvoiceDAO.get_lines(conn, invoice)
-    if len(lines) == 0: return
-    with open(out_path, "w+", newline='') as csvfile:
+    lines: List[InvoiceLineModel] = InvoiceRepository.get_lines(invoice)
+    if len(lines) == 0:
+        return
+    with open(out_path, "w+", newline="") as csvfile:
         writer = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC)
         writer.writerow(["INVOICE_ID", "CUSTOMER_ID", "CUSTOMER_NAME"])
         writer.writerow([invoice.id, invoice.customer_id, invoice.customer_name])
         writer.writerow(["LINE_NUMBER", "TITLE", "LINE_AMOUNT"])
         for line in lines:
-            writer.writerow([line.line_number, line.title, line.amount / 100])
+            if "BONUS" in line.title:
+                line.amount = "YES" if line.title else "NO"
+            else:
+                line.amount = line.amount / 100
+            writer.writerow([line.line_number, line.title, line.amount])
+    return out_path
 
-def generate_invoices_for_all(conn: Connection, month = None):
-    invoices: List[InvoiceModel] = InvoiceDAO.get_all(conn) if month is None else InvoiceDAO.get_for_month(conn, month)
-    for invoice in invoices:
-        create_single_csv(conn, invoice)
+
+def generate_invoices_for_all(month=None):
+    with DbSession() as session:
+        invoices: List[InvoiceModel] = (
+            InvoiceRepository.get_all(session)
+            if month is None
+            else InvoiceRepository.get_for_month(session, month)
+        )
+        for invoice in invoices:
+            create_single_csv(session, invoice)

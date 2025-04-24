@@ -1,34 +1,37 @@
-from abc import ABC, abstractmethod
 import csv
-from sqlite3 import Connection 
-class DataConverter(ABC):
+from abc import ABC, abstractmethod
+from typing import List, Generic
+
+from sqlalchemy.orm import Session
+from typing_extensions import TypeVar
+
+Model = TypeVar("Model")
+
+
+class DataConverter(ABC, Generic[Model]):
     data_path = ""
-    data = None
+    data: List[Model] = []
 
     def __init__(self, data_path):
         self.data_path = data_path
 
     """Loads CSV file stored at data_path into variable. Data is extracted using to_tuple() method"""
+
     def load_data(self):
         with open(self.data_path) as csvfile:
             reader = csv.DictReader(csvfile, delimiter=",", quotechar='"')
-            self.data = list(map(lambda x: self.to_tuple(x), reader))
-
-    """Return an insert query. Use placeholders to denote variables. This is used in conjuction with to_tuple() method"""
-    @abstractmethod
-    def get_query(self):
-        raise NotImplementedError
+            self.data = list(map(lambda x: self.to_model(x), reader))
 
     """Convert CSV data row to tuple. Tuple MUST correspond to placeholders for insert statement (denoted with ?)"""
+
     @abstractmethod
-    def to_tuple(self, row):
+    def to_model(self, row) -> Model:
         pass
-    
+
     """Insert loaded data into the database"""
-    def to_database(self, conn: Connection):
-        cursor = conn.cursor()
-        if self.data == None or len(self.data) == 0:
+
+    def to_database(self, session: Session):
+        if len(self.data) == 0:
             raise Exception("Empty data")
-        cursor.executemany(self.get_query(), self.data)
-        conn.commit()
-        cursor.close()
+        session.add_all(self.data)
+        session.commit()
